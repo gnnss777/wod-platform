@@ -17,7 +17,7 @@ function createPool() {
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    adapter: new PrismaPg({ pool: createPool() }),
+    adapter: new PrismaPg(createPool()),
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
