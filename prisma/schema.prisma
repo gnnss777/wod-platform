@@ -1,0 +1,223 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  NARRADOR
+  JOGADOR
+}
+
+enum GameEdition {
+  V5
+  V20
+}
+
+enum ChronicleStatus {
+  ATIVA
+  ENCERRADA
+}
+
+model User {
+  id        String      @id @default(cuid())
+  name      String
+  email     String      @unique
+  password  String
+  role      UserRole    @default(JOGADOR)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  chronicles     Chronicle[]
+  characters     Character[]
+  notes          Note[]
+  npcs           Npc[]
+  scenes         Scene[]
+  narratorNotes  NarratorNote[]
+  sessions       LiveSession[]
+  sessionMessages SessionMessage[]
+}
+
+model Chronicle {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  edition     GameEdition?
+  status      ChronicleStatus @default(ATIVA)
+  narratorId  String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  narrator   User        @relation(fields: [narratorId], references: [id])
+  characters Character[]
+  npcs       Npc[]
+  scenes     Scene[]
+  narratorNotes NarratorNote[]
+  sessions      LiveSession[]
+}
+
+enum CharacterStatus {
+  RASCUNHO
+  PENDENTE
+  APROVADO
+}
+
+model Character {
+  id         String       @id @default(cuid())
+  name       String
+  playerId   String
+  chronicleId String?
+
+  edition    GameEdition     @default(V20)
+  status     CharacterStatus @default(RASCUNHO)
+
+  concept    String?
+  nature     String?
+  demeanor   String?
+  clan       String?
+  generation Int?
+  sect       String?
+
+  attributes   Json @default("{}")
+  abilities    Json @default("{}")
+  advantages   Json @default("{}")
+  powers       Json @default("{}")
+  backgrounds  Json @default("{}")
+  meritsFlaws  Json @default("{}")
+
+  health     Json @default("{\"max\":7,\"bashing\":0,\"lethal\":0,\"aggravated\":0}")
+  willpower  Json @default("{\"rating\":3,\"current\":3}")
+  morality   Json @default("{\"type\":\"humanity\",\"rating\":7}")
+  pool       Json @default("{\"type\":\"blood\",\"rating\":10,\"current\":10}")
+
+  experience     Json @default("{\"total\":0,\"spent\":0}")
+
+  notes      String?
+
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  player     User         @relation(fields: [playerId], references: [id])
+  chronicle  Chronicle?   @relation(fields: [chronicleId], references: [id])
+
+  playerNotes Note[] @relation("CharacterNotes")
+}
+
+enum NoteType {
+  PESSOAL
+  DIARIO
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  type        NoteType @default(PESSOAL)
+  playerId    String
+  characterId String?
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  player    User       @relation(fields: [playerId], references: [id])
+  character Character? @relation(name: "CharacterNotes", fields: [characterId], references: [id], onDelete: SetNull)
+}
+
+model Npc {
+  id          String   @id @default(cuid())
+  name        String
+  chronicleId String?
+  concept     String?
+  clan        String?
+  attributes  Json     @default("{}")
+  abilities   Json     @default("{}")
+  willpower   Json     @default("{\"rating\":3,\"current\":3}")
+  health      Json     @default("{\"max\":7,\"bashing\":0,\"lethal\":0,\"aggravated\":0}")
+  powers      Json     @default("{}")
+  notes       String?
+  narratorId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  narrator  User       @relation(fields: [narratorId], references: [id])
+  chronicle Chronicle? @relation(fields: [chronicleId], references: [id])
+}
+
+model Scene {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  chapter     Int?
+  chronicleId String
+  narratorId  String
+  order       Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chronicle Chronicle @relation(fields: [chronicleId], references: [id])
+  narrator  User      @relation(fields: [narratorId], references: [id])
+}
+
+model NarratorNote {
+  id         String   @id @default(cuid())
+  title      String
+  content    String
+  narratorId String
+  chronicleId String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  narrator  User       @relation(fields: [narratorId], references: [id])
+  chronicle Chronicle? @relation(fields: [chronicleId], references: [id])
+}
+
+enum SessionStatus {
+  ACTIVE
+  ENDED
+}
+
+model LiveSession {
+  id            String        @id @default(cuid())
+  chronicleId   String
+  narratorId    String
+  status        SessionStatus @default(ACTIVE)
+  currentSceneId String?
+  startedAt     DateTime      @default(now())
+  endedAt       DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  chronicle Chronicle @relation(fields: [chronicleId], references: [id])
+  narrator  User      @relation(fields: [narratorId], references: [id])
+
+  initiative  InitiativeEntry[]
+  messages    SessionMessage[]
+}
+
+model InitiativeEntry {
+  id        String   @id @default(cuid())
+  sessionId String
+  name      String
+  value     Int
+  isPlayer  Boolean  @default(false)
+  actorId   String?
+  turnOrder Int
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  session LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model SessionMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  session LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id])
+}
