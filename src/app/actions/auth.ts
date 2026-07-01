@@ -26,9 +26,14 @@ export async function signup(state: FormState, formData: FormData) {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: { name, email, password: hashedPassword, role: "JOGADOR" },
-  });
+  let user;
+  try {
+    user = await prisma.user.create({
+      data: { name, email, password: hashedPassword, role: "JOGADOR" },
+    });
+  } catch (e) {
+    return { message: `Erro ao criar conta: ${e instanceof Error ? e.message : String(e)}` };
+  }
 
   await createSession(user.id, user.role);
   redirect("/jogador");
@@ -46,7 +51,13 @@ export async function login(state: FormState, formData: FormData) {
 
   const { email, password } = validatedFields.data;
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  let user;
+  try {
+    user = await prisma.user.findUnique({ where: { email } });
+  } catch (e) {
+    return { message: `Erro de conexão: ${e instanceof Error ? e.message : String(e)}` };
+  }
+
   if (!user) {
     return { message: "Email ou senha inválidos" };
   }
