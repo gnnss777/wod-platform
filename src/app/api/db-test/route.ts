@@ -8,30 +8,26 @@ export async function GET() {
 
   results.env = {
     node: process.version,
-    dnsSetOrder: typeof (require("node:dns") as any).setDefaultResultOrder === "function",
+    hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
   };
 
   try {
-    const dns = require("node:dns");
-    const ip = await new Promise((resolve, reject) => {
-      dns.lookup("db.njrhclykhwygctzmnwdd.supabase.co", { all: true }, (err: any, addresses: any) => {
-        if (err) reject(err);
-        else resolve(addresses.map((a: any) => `${a.address} (v${a.family})`));
-      });
-    });
-    results.dns = ip;
+    const { supabaseAdmin } = await import("@/lib/supabase-admin");
+    const { data, error } = await supabaseAdmin.from("User").select("email", { count: "exact", head: true });
+    results.supabase = error ? "FAIL" : "OK";
+    results.userCount = data;
   } catch (e: any) {
-    results.dns = e.message;
+    results.supabase = "FAIL";
+    results.supabaseError = e.message?.slice(0, 300);
   }
 
   try {
     const { prisma } = await import("@/lib/prisma");
     const r = await prisma.$queryRaw`SELECT 1 as ok`;
     results.prisma = "OK";
-    results.query = r;
   } catch (e: any) {
     results.prisma = "FAIL";
-    results.prismaError = e.message?.slice(0, 500);
+    results.prismaError = e.message?.slice(0, 200);
   }
 
   return NextResponse.json(results);
