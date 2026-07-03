@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { createId } from "@paralleldrive/cuid2";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createSession, deleteSession } from "@/lib/session";
 import { SignupFormSchema, LoginFormSchema, FormState } from "@/lib/definitions";
@@ -26,11 +27,15 @@ export async function signup(state: FormState, formData: FormData) {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
+  const now = new Date().toISOString();
   const { data: user, error } = await supabaseAdmin.from("User").insert({
+    id: createId(),
     name,
     email,
     password: hashedPassword,
     role: "JOGADOR",
+    createdAt: now,
+    updatedAt: now,
   }).select().single();
 
   if (error || !user) {
