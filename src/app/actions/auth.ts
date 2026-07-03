@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { supabaseAdmin } from "@/lib/supabase-admin";
 import { createSession, deleteSession } from "@/lib/session";
 import { SignupFormSchema, LoginFormSchema, FormState } from "@/lib/definitions";
 
@@ -19,20 +19,22 @@ export async function signup(state: FormState, formData: FormData) {
 
   const { name, email, password } = validatedFields.data;
 
-  const existing = await prisma.user.findUnique({ where: { email } });
+  const { data: existing } = await supabaseAdmin.from("User").select("id").eq("email", email).single();
   if (existing) {
     return { message: "Este email já está cadastrado" };
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  let user;
-  try {
-    user = await prisma.user.create({
-      data: { name, email, password: hashedPassword, role: "JOGADOR" },
-    });
-  } catch (e) {
-    return { message: `Erro ao criar conta: ${e instanceof Error ? e.message : String(e)}` };
+  const { data: user, error } = await supabaseAdmin.from("User").insert({
+    name,
+    email,
+    password: hashedPassword,
+    role: "JOGADOR",
+  }).select().single();
+
+  if (error || !user) {
+    return { message: `Erro ao criar conta: ${error?.message || "Desconhecido"}` };
   }
 
   await createSession(user.id, user.role);
@@ -51,12 +53,7 @@ export async function login(state: FormState, formData: FormData) {
 
   const { email, password } = validatedFields.data;
 
-  let user;
-  try {
-    user = await prisma.user.findUnique({ where: { email } });
-  } catch (e) {
-    return { message: `Erro de conexão: ${e instanceof Error ? e.message : String(e)}` };
-  }
+  const { data: user } = await supabaseAdmin.from("User").select("*").eq("email", email).single();
 
   if (!user) {
     return { message: "Email ou senha inválidos" };
