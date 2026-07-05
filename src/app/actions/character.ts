@@ -27,7 +27,7 @@ export async function createCharacter(data: CharFormData) {
     concept: data.concept ?? null,
     attributes,
     abilities,
-  });
+  }) as any;
 
   revalidatePath("/jogador/fichas");
   revalidatePath("/narrador/fichas");

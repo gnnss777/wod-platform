@@ -18,7 +18,7 @@ function applyOrder(query: any, orderBy: any) {
 }
 
 export const db = {
-  async find<T>(table: string, where: Record<string, any>, select = "*", opts?: { orderBy?: any; take?: number }): Promise<T[]> {
+  async find<T = any>(table: string, where: Record<string, any>, select = "*", opts?: { orderBy?: any; take?: number }): Promise<T[]> {
     let q = applyFilters(supabaseAdmin.from(table).select(select), where);
     if (opts?.orderBy) q = applyOrder(q, opts.orderBy);
     if (opts?.take) q = q.limit(opts.take);
@@ -26,25 +26,25 @@ export const db = {
     return (data || []) as T[];
   },
 
-  async get<T>(table: string, where: Record<string, any>, select = "*"): Promise<T | null> {
+  async get<T = any>(table: string, where: Record<string, any>, select = "*"): Promise<T | null> {
     const { data } = await applyFilters(supabaseAdmin.from(table).select(select), where).maybeSingle();
     return data as T | null;
   },
 
-  async create<T>(table: string, data: any): Promise<T> {
+  async create<T = any>(table: string, data: any): Promise<T> {
     const now = new Date().toISOString();
     const { data: r, error } = await supabaseAdmin.from(table).insert({ id: createId(), ...data, createdAt: now, updatedAt: now }).select().single();
     if (error) throw error;
     return r as T;
   },
 
-  async update<T>(table: string, where: Record<string, any>, data: any): Promise<T | null> {
+  async update<T = any>(table: string, where: Record<string, any>, data: any): Promise<T | null> {
     const { data: r, error } = await applyFilters(supabaseAdmin.from(table).update({ ...data, updatedAt: new Date().toISOString() }).select(), where).maybeSingle();
     if (error) throw error;
     return r as T | null;
   },
 
-  async remove<T>(table: string, id: string): Promise<T | null> {
+  async remove<T = any>(table: string, id: string): Promise<T | null> {
     const { data, error } = await supabaseAdmin.from(table).delete().eq("id", id).select().maybeSingle();
     if (error) throw error;
     return data as T | null;
