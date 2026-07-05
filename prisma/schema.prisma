@@ -31,14 +31,15 @@ model User {
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
-  chronicles     Chronicle[]
-  characters     Character[]
-  notes          Note[]
-  npcs           Npc[]
-  scenes         Scene[]
-  narratorNotes  NarratorNote[]
-  sessions       LiveSession[]
-  sessionMessages SessionMessage[]
+  chronicles       Chronicle[]
+  chronicleMembers ChronicleMember[]
+  characters       Character[]
+  notes            Note[]
+  npcs             Npc[]
+  scenes           Scene[]
+  narratorNotes    NarratorNote[]
+  sessions         LiveSession[]
+  sessionMessages  SessionMessage[]
 }
 
 model Chronicle {
@@ -51,12 +52,25 @@ model Chronicle {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  narrator   User        @relation(fields: [narratorId], references: [id])
-  characters Character[]
-  npcs       Npc[]
-  scenes     Scene[]
-  narratorNotes NarratorNote[]
-  sessions      LiveSession[]
+  narrator          User              @relation(fields: [narratorId], references: [id])
+  characters        Character[]
+  npcs              Npc[]
+  scenes            Scene[]
+  narratorNotes     NarratorNote[]
+  sessions          LiveSession[]
+  chronicleMembers  ChronicleMember[]
+}
+
+model ChronicleMember {
+  id          String   @id @default(cuid())
+  chronicleId String
+  userId      String
+  createdAt   DateTime @default(now())
+
+  chronicle Chronicle @relation(fields: [chronicleId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@unique([chronicleId, userId])
 }
 
 enum CharacterStatus {

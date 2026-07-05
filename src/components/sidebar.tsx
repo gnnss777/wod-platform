@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import {
-  LayoutDashboard, Users, FileText, BookOpen, Globe, Dice5, Radio, ScrollText, Library, UserCheck, X,
+  LayoutDashboard, Users, FileText, BookOpen, Globe, Dice5, Radio, ScrollText, Library, UserCheck, UserPlus, X,
 } from "lucide-react";
 import { useNav } from "@/lib/nav-context";
 
@@ -23,6 +23,7 @@ const jogadorItems: NavItem[] = [
 const narradorItems: NavItem[] = [
   { label: "Dashboard", href: "/narrador", icon: LayoutDashboard },
   { label: "Crônicas", href: "/narrador/cronicas", icon: BookOpen },
+  { label: "Jogadores", href: "/narrador/jogadores", icon: UserPlus },
   { label: "NPCs", href: "/narrador/npcs", icon: Users },
   { label: "Fichas", href: "/narrador/fichas", icon: UserCheck },
   { label: "Cenas", href: "/narrador/cenas", icon: ScrollText },

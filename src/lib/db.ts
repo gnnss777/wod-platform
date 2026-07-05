@@ -3,7 +3,13 @@ import { supabaseAdmin } from "./supabase-admin";
 
 function applyFilters(query: any, where: Record<string, any>) {
   for (const [k, v] of Object.entries(where)) {
-    if (v !== undefined) query = query.eq(k, v);
+    if (v === undefined) continue;
+    if (k.endsWith("_in")) {
+      const field = k.slice(0, -3);
+      query = query.in(field, v);
+    } else {
+      query = query.eq(k, v);
+    }
   }
   return query;
 }

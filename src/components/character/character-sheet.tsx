@@ -96,7 +96,7 @@ export function CharacterSheet({
           {isOwner && char.status !== "PENDENTE" && (
             <form action={async () => {
               "use server";
-              const { submitCharacterForApproval } = await import("@/app/actions/scene");
+              const { submitCharacterForApproval } = await import("@/app/actions/jogadores");
               await submitCharacterForApproval(char.id);
             }}>
               <button

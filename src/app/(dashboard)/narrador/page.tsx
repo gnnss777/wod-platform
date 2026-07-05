@@ -9,11 +9,17 @@ export default async function NarradorDashboard() {
   const npcs = await getNpcs();
   const pendingChars = await db.count("Character", { status: "PENDENTE" });
 
+  const chronicleIds = chronicles.map(c => c.id);
+  const totalPlayers = chronicleIds.length
+    ? await db.count("ChronicleMember", { chronicleId_in: chronicleIds })
+    : 0;
+
   const stats = {
     cronicas: chronicles.length,
     npcs: npcs.length,
     pendentes: pendingChars,
     ativas: chronicles.filter((c) => c.status === "ATIVA").length,
+    jogadores: totalPlayers,
   };
 
   return (
@@ -25,8 +31,9 @@ export default async function NarradorDashboard() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-5">
         <StatCard title="Crônicas Ativas" value={stats.ativas} />
+        <StatCard title="Jogadores" value={stats.jogadores} />
         <StatCard title="Total de NPCs" value={stats.npcs} />
         <StatCard title="Fichas Pendentes" value={stats.pendentes} highlight={stats.pendentes > 0} />
         <StatCard title="Crônicas" value={stats.cronicas} />
@@ -34,6 +41,7 @@ export default async function NarradorDashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <Card title="Crônicas" description="Crie e gerencie suas crônicas" href="/narrador/cronicas" />
+        <Card title="Jogadores" description="Gerencie jogadores nas suas crônicas" href="/narrador/jogadores" />
         <Card title="NPCs" description="Gerencie personagens não-jogadores" href="/narrador/npcs" />
         <Card title="Fichas dos Jogadores" description="Visualize e aprove fichas" href="/narrador/fichas" />
         <Card title="Cenas" description="Planeje cenas e capítulos" href="/narrador/cenas" />
