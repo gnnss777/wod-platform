@@ -28,6 +28,14 @@ npx next start
 Se `.env.local` tiver `SUPABASE_URL=""` etc, o build falha porque sobrescreve `.env`.
 Solução: remover manualmente as linhas com valores vazios do `.env.local`.
 
+## Seed (dados de simulação)
+
+```powershell
+# Popula o banco com a crônica "Noites Sombrias em Curitiba"
+# 14 jogadores, 14 fichas, 6 NPCs, 4 cenas, notas do narrador
+npx tsx scripts/seed.ts
+```
+
 ## Vercel
 
 ```powershell
