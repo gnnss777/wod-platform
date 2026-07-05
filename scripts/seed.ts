@@ -103,19 +103,27 @@ async function main() {
   for (const c of CHARACTERS) {
     const uid = userIds[c.playerEmail];
     if (!uid) throw new Error(`User not found: ${c.playerEmail}`);
-    const { error } = await sb.from("Character").insert({
-      id: createId(), name: c.name, playerId: uid, chronicleId: chrId,
-      edition: c.edition, status: "APROVADO",
-      concept: c.concept ?? null, nature: c.nature ?? null,
-      demeanor: c.demeanor ?? null, clan: c.clan ?? null,
-      generation: c.generation ?? null, sect: c.sect ?? null,
-      attributes: c.attributes, abilities: c.abilities,
-      advantages: {}, powers: c.powers, backgrounds: c.backgrounds,
-      meritsFlaws: {}, health: c.health, willpower: c.willpower,
-      morality: c.morality, pool: c.pool, experience: c.experience,
-      notes: c.notes ?? null,
-      createdAt: now(), updatedAt: now(),
-    });
+      const { error } = await sb.from("Character").insert({
+        id: createId(), name: c.name, playerId: uid, chronicleId: chrId,
+        edition: c.edition, status: "APROVADO",
+        concept: c.concept ?? null, nature: c.nature ?? null,
+        demeanor: c.demeanor ?? null, clan: c.clan ?? null,
+        generation: c.generation ?? null, sect: c.sect ?? null,
+        sire: c.sire ?? null, ambition: c.ambition ?? null,
+        desire: c.desire ?? null, predatorType: c.predatorType ?? null,
+        age: c.age ?? null, apparentAge: c.apparentAge ?? null,
+        appearance: c.appearance ?? null, personality: c.personality ?? null,
+        history: c.history ?? null, goals: c.goals ?? null,
+        weakness: c.weakness ?? null,
+        touchstones: c.touchstones ?? null, convictions: c.convictions ?? null,
+        alliesContacts: c.alliesContacts ?? null, possessions: c.possessions ?? null,
+        attributes: c.attributes, abilities: c.abilities,
+        advantages: {}, powers: c.powers, backgrounds: c.backgrounds,
+        meritsFlaws: {}, health: c.health, willpower: c.willpower,
+        morality: c.morality, pool: c.pool, experience: c.experience,
+        notes: c.notes ?? null,
+        createdAt: now(), updatedAt: now(),
+      });
     if (error) {
       console.error(`   ❌ ${c.name}: ${error.message}`);
       console.error(error);

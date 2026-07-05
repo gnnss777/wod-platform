@@ -8,13 +8,14 @@ import { Input } from "@/components/ui/input";
 
 type Props = {
   id: string;
-  initial: { name: string; description: string; edition: string };
+  initial: { name: string; description: string; narrativeText: string; edition: string };
 };
 
 export function EditChronicleForm({ id, initial }: Props) {
   const router = useRouter();
   const [name, setName] = useState(initial.name);
   const [description, setDescription] = useState(initial.description);
+  const [narrativeText, setNarrativeText] = useState(initial.narrativeText);
   const [edition, setEdition] = useState(initial.edition);
   const [submitting, setSubmitting] = useState(false);
 
@@ -22,7 +23,7 @@ export function EditChronicleForm({ id, initial }: Props) {
     e.preventDefault();
     if (!name.trim()) return;
     setSubmitting(true);
-    await updateChronicle(id, { name, description, edition: edition || undefined });
+    await updateChronicle(id, { name, description, narrativeText, edition: edition || undefined });
     router.push(`/narrador/cronicas/${id}`);
     router.refresh();
   }
@@ -37,6 +38,15 @@ export function EditChronicleForm({ id, initial }: Props) {
           rows={4}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
+      <div className="space-y-1">
+        <label className="text-sm font-medium">Texto Narrativo</label>
+        <textarea
+          className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+          rows={6}
+          value={narrativeText}
+          onChange={(e) => setNarrativeText(e.target.value)}
         />
       </div>
       <div className="flex gap-3">

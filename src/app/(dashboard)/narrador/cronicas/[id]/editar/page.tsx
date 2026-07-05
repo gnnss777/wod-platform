@@ -16,7 +16,7 @@ export default async function EditarCronicaPage({
       <h1 className="text-2xl font-bold">Editar Crônica</h1>
       <EditChronicleForm
         id={chronicle.id}
-        initial={{ name: chronicle.name, description: chronicle.description ?? "", edition: chronicle.edition ?? "" }}
+        initial={{ name: chronicle.name, description: chronicle.description ?? "", narrativeText: (chronicle as any).narrativeText ?? "", edition: chronicle.edition ?? "" }}
       />
     </div>
   );

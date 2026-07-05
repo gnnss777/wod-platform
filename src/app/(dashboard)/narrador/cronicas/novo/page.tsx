@@ -10,6 +10,7 @@ export default function NovaCronicaPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [narrativeText, setNarrativeText] = useState("");
   const [edition, setEdition] = useState<"V5" | "V20">("V20");
   const [submitting, setSubmitting] = useState(false);
 
@@ -17,7 +18,7 @@ export default function NovaCronicaPage() {
     e.preventDefault();
     if (!name.trim()) return;
     setSubmitting(true);
-    await createChronicle({ name, description, edition });
+    await createChronicle({ name, description, narrativeText, edition });
   }
 
   return (
@@ -49,6 +50,19 @@ export default function NovaCronicaPage() {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Tema, época, conceito da crônica..."
+          />
+        </div>
+
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Texto Narrativo
+          </label>
+          <textarea
+            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            rows={6}
+            value={narrativeText}
+            onChange={(e) => setNarrativeText(e.target.value)}
+            placeholder="Texto narrativo da crônica (aparece para jogadores)..."
           />
         </div>
 

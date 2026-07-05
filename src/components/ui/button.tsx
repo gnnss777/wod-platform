@@ -1,7 +1,7 @@
 import { ButtonHTMLAttributes } from "react";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "accent" | "danger";
 };
 
 export function Button({
@@ -18,6 +18,10 @@ export function Button({
     secondary:
       "border border-zinc-300 bg-white hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700",
     ghost: "hover:bg-zinc-100 dark:hover:bg-zinc-800",
+    accent:
+      "bg-crimson text-white hover:bg-crimson-light dark:bg-crimson dark:hover:bg-crimson-light",
+    danger:
+      "bg-red-600 text-white hover:bg-red-700 dark:bg-red-800 dark:hover:bg-red-700",
   };
 
   return (

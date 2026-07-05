@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -7,7 +7,7 @@ import { verifySession } from "@/lib/dal";
 
 export async function startSession(chronicleId: string) {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") throw new Error("Unauthorized");
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") throw new Error("Unauthorized");
 
   const existing = await db.get("LiveSession", { chronicleId, status: "ACTIVE" });
   if (existing) redirect(`/narrador/sessao/${(existing as any).id}`);
@@ -20,7 +20,7 @@ export async function startSession(chronicleId: string) {
 
 export async function endSession(id: string) {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") throw new Error("Unauthorized");
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") throw new Error("Unauthorized");
 
   await db.update("LiveSession", { id, narratorId: session.userId }, { status: "ENDED", endedAt: new Date().toISOString() });
   revalidatePath("/narrador/sessao");
@@ -28,32 +28,54 @@ export async function endSession(id: string) {
 }
 
 export async function getActiveSession(chronicleId: string) {
-  const data = await db.get("LiveSession", { chronicleId, status: "ACTIVE" }, "*, chronicle(name), initiative(*), messages(*, user(name))") as any;
-  if (data?.messages) data.messages = data.messages.sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()).slice(-50);
-  if (data?.initiative) data.initiative = data.initiative.sort((a: any, b: any) => a.turnOrder - b.turnOrder);
+  const data = await db.get("LiveSession", { chronicleId, status: "ACTIVE" }) as any;
+  if (!data) return null;
+  const { data: initiative } = await db.find("InitiativeEntry", { sessionId: data.id }, "*", { orderBy: { turnOrder: "asc" } }) as any;
+  data.initiative = initiative || [];
+  data.messages = [];
   return data;
 }
 
 export async function getSession(id: string) {
   const s = await verifySession();
 
-  const live = await db.get("LiveSession", { id }, "*, chronicle(name, narratorId), initiative(*), messages(*, user(name,role))") as any;
+  const live = await db.get("LiveSession", { id }, "*") as any;
   if (!live) return null;
 
-  if (live.chronicle.narratorId !== s.userId && s.role !== "NARRADOR") {
+  const [chronicle, initiative, messages] = await Promise.all([
+    db.get("Chronicle", { id: live.chronicleId }, "id,name,narratorId"),
+    db.find("InitiativeEntry", { sessionId: live.id }, "*", { orderBy: { turnOrder: "asc" } }),
+    db.find("SessionMessage", { sessionId: live.id }, "*", { orderBy: { createdAt: "asc" } }),
+  ]);
+
+  if ((chronicle as any)?.narratorId !== s.userId && s.role !== "MESTRE" && s.role !== "NARRADOR") {
     const isPlayer = await db.get("Character", { chronicleId: live.chronicleId, playerId: s.userId });
     if (!isPlayer) return null;
   }
 
-  if (live?.messages) live.messages = live.messages.sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()).slice(-100);
-  if (live?.initiative) live.initiative = live.initiative.sort((a: any, b: any) => a.turnOrder - b.turnOrder);
+  const userIds = [...new Set((messages as any[]).map((m: any) => m.userId).filter(Boolean))];
+  const userMap: Record<string, { name: string; role: string }> = {};
+  if (userIds.length) {
+    const users = await db.find("User", { id_in: userIds }, "id,name,role");
+    for (const u of users as any[]) userMap[u.id] = { name: u.name, role: u.role };
+  }
+
+  live.chronicle = chronicle || null;
+  live.initiative = (initiative as any[]).sort((a: any, b: any) => a.turnOrder - b.turnOrder);
+  live.messages = (messages as any[])
+    .sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    .slice(-100)
+    .map((m: any) => ({
+      ...m,
+      user: userMap[m.userId] || { name: "Desconhecido", role: "JOGADOR" },
+    }));
 
   return live;
 }
 
 export async function addInitiative(sessionId: string, data: { name: string; value: number; isPlayer?: boolean; actorId?: string }) {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") throw new Error("Unauthorized");
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") throw new Error("Unauthorized");
 
   const count = await db.count("InitiativeEntry", { sessionId });
 
@@ -68,7 +90,7 @@ export async function addInitiative(sessionId: string, data: { name: string; val
 
 export async function removeInitiative(entryId: string, sessionId: string) {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") throw new Error("Unauthorized");
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") throw new Error("Unauthorized");
 
   await db.remove("InitiativeEntry", entryId);
   await reorderInitiative(sessionId);
@@ -84,7 +106,7 @@ async function reorderInitiative(sessionId: string) {
 
 export async function nextTurn(sessionId: string) {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") throw new Error("Unauthorized");
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") throw new Error("Unauthorized");
 
   const entries = await db.find("InitiativeEntry", { sessionId }, "id,isActive", { orderBy: { turnOrder: "asc" } }) as any[];
 
@@ -110,7 +132,7 @@ export async function sendMessage(sessionId: string, content: string) {
 
 export async function setCurrentScene(sessionId: string, sceneId: string | null) {
   const s = await verifySession();
-  if (s.role !== "NARRADOR") throw new Error("Unauthorized");
+  if (s.role !== "MESTRE" && s.role !== "NARRADOR") throw new Error("Unauthorized");
 
   await db.update("LiveSession", { id: sessionId }, { currentSceneId: sceneId });
   revalidatePath(`/narrador/sessao/${sessionId}`);

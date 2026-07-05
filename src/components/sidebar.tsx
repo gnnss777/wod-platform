@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import {
-  LayoutDashboard, Users, FileText, BookOpen, Globe, Dice5, Radio, ScrollText, Library, UserCheck, UserPlus, X,
+  LayoutDashboard, Users, FileText, BookOpen, Globe, Dice5, Radio, ScrollText, Library, UserCheck, UserPlus, X, FolderOpen,
 } from "lucide-react";
 import { useNav } from "@/lib/nav-context";
 
@@ -18,6 +18,8 @@ const jogadorItems: NavItem[] = [
   { label: "Crônica", href: "/jogador/cronica", icon: Globe },
   { label: "Rolador V20", href: "/jogador/rolador", icon: Dice5 },
   { label: "Rolador V5", href: "/jogador/rolador-v5", icon: Dice5 },
+  { label: "Notas do Mestre", href: "/jogador/notas-privadas", icon: FileText },
+  { label: "Documentos", href: "/jogador/documentos", icon: FolderOpen },
 ];
 
 const narradorItems: NavItem[] = [
@@ -32,6 +34,8 @@ const narradorItems: NavItem[] = [
   { label: "Rolador V5", href: "/narrador/rolador-v5", icon: Dice5 },
   { label: "Regras", href: "/narrador/regras", icon: Library },
   { label: "Notas", href: "/narrador/notas", icon: FileText },
+  { label: "Notas Privadas", href: "/narrador/notas-privadas", icon: FileText },
+  { label: "Documentos", href: "/narrador/documentos", icon: FolderOpen },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -44,7 +48,7 @@ function isActive(pathname: string, href: string) {
 export function Sidebar({ role }: { role: string }) {
   const pathname = usePathname();
   const { open, close } = useNav();
-  const items = role === "NARRADOR" ? narradorItems : jogadorItems;
+  const items = role === "MESTRE" || role === "NARRADOR" ? narradorItems : jogadorItems;
 
   return (
     <aside className={clsx(
@@ -52,7 +56,7 @@ export function Sidebar({ role }: { role: string }) {
       open ? "translate-x-0" : "-translate-x-full",
     )}>
       <div className="flex h-14 items-center justify-between border-b border-zinc-800 px-4">
-        <Link href={role === "NARRADOR" ? "/narrador" : "/jogador"} className="text-sm font-bold tracking-wider text-zinc-100" onClick={close}>
+        <Link href={role === "MESTRE" || role === "NARRADOR" ? "/narrador" : "/jogador"} className="text-sm font-bold tracking-wider text-zinc-100" onClick={close}>
           WoD Platform
         </Link>
         <button onClick={close} className="text-zinc-400 hover:text-zinc-100 lg:hidden">

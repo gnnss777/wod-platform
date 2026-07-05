@@ -1,7 +1,7 @@
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import Link from "next/link";
-import { Plus, User, UserCheck, FileText } from "lucide-react";
+import { Plus, User, UserCheck } from "lucide-react";
 
 export default async function JogadoresPage() {
   const session = await verifySession();
@@ -16,25 +16,29 @@ export default async function JogadoresPage() {
   const members = chronicleIds.length
     ? await db.find("ChronicleMember",
         { chronicleId_in: chronicleIds },
-        "*, user(id, name, email)"
+        "chronicleId, userId"
       ) as any[]
     : [];
 
-  const userIds = [...new Set(members.map(m => m.userId))];
+  const userIds = [...new Set(members.map(m => m.userId))] as string[];
 
-  const charCounts = userIds.length
-    ? await db.batchCounts("Character", "playerId", userIds)
-    : {};
+  const [users, charCounts] = await Promise.all([
+    userIds.length ? db.find("User", { id_in: userIds }, "id, name, email") as Promise<any[]> : Promise.resolve([] as any[]),
+    userIds.length ? db.batchCounts("Character", "playerId", userIds) : Promise.resolve({} as Record<string, number>),
+  ]);
+
+  const userMap: Record<string, { name: string; email: string }> = {};
+  for (const u of users) userMap[u.id] = { name: u.name, email: u.email };
 
   const grouped: Record<string, { id: string; name: string; email: string; charCount: number }[]> = {};
   for (const c of chronicles) {
     const players = members
       .filter(m => m.chronicleId === c.id)
       .map(m => ({
-        id: m.user.id,
-        name: m.user.name,
-        email: m.user.email,
-        charCount: charCounts[m.user.id] || 0,
+        id: m.userId,
+        name: userMap[m.userId]?.name || "Desconhecido",
+        email: userMap[m.userId]?.email || "-",
+        charCount: charCounts[m.userId] || 0,
       }));
     if (players.length) grouped[c.id] = players;
   }
@@ -99,10 +103,7 @@ export default async function JogadoresPage() {
                           <td className="px-4 py-3 text-zinc-500 hidden sm:table-cell">{p.email}</td>
                           <td className="px-4 py-3 text-center text-zinc-400">{p.charCount}</td>
                           <td className="px-4 py-3 text-right">
-                            <Link
-                              href={`/narrador/jogadores/${p.id}`}
-                              className="text-sm text-zinc-500 hover:text-zinc-300"
-                            >
+                            <Link href={`/narrador/jogadores/${p.id}`} className="text-sm text-zinc-500 hover:text-zinc-300">
                               Ver detalhes
                             </Link>
                           </td>

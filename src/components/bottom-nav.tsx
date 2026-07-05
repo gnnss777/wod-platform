@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,7 +25,7 @@ const narradorItems: Item[] = [
 
 export function BottomNav({ role }: { role: string }) {
   const pathname = usePathname();
-  const items = role === "NARRADOR" ? narradorItems : jogadorItems;
+  const items = role === "MESTRE" || role === "NARRADOR" ? narradorItems : jogadorItems;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-800 bg-zinc-950 lg:hidden">

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -71,7 +71,7 @@ export function ChatPanel({
           <div key={m.id} className="text-sm">
             <span
               className={`font-semibold text-xs ${
-                m.user.role === "NARRADOR"
+                m.user.role === "MESTRE" || m.user.role === "NARRADOR"
                   ? "text-red-500 dark:text-red-400"
                   : "text-zinc-900 dark:text-zinc-100"
               }`}

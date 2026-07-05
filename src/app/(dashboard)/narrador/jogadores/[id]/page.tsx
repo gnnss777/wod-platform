@@ -2,7 +2,7 @@ import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { FileText, User, CheckCircle, Clock, XCircle } from "lucide-react";
+import { FileText, User, CheckCircle, Clock } from "lucide-react";
 
 export default async function JogadorDetailPage(props: { params: Promise<{ id: string }> }) {
   const session = await verifySession();
@@ -21,7 +21,7 @@ export default async function JogadorDetailPage(props: { params: Promise<{ id: s
   const memberships = chronicleIds.length
     ? await db.find("ChronicleMember",
         { chronicleId_in: chronicleIds, userId: player.id },
-        "*, chronicle(id, name)"
+        "chronicleId"
       ) as any[]
     : [];
 
@@ -30,7 +30,7 @@ export default async function JogadorDetailPage(props: { params: Promise<{ id: s
   const characters = playerChronicleIds.length
     ? await db.find("Character",
         { playerId: player.id, chronicleId_in: playerChronicleIds },
-        "*, chronicle(id, name)"
+        "id, name, edition, status, concept, clan, chronicleId, updatedAt"
       ) as any[]
     : [];
 
@@ -40,19 +40,19 @@ export default async function JogadorDetailPage(props: { params: Promise<{ id: s
     { orderBy: { createdAt: "desc" } }
   ) as any[];
 
-  const chronicleNotes = notes.filter(n =>
-    !n.characterId || characters.some(c => c.id === n.characterId)
+  const chronicleNotes = notes.filter((n: any) =>
+    !n.characterId || characters.some((c: any) => c.id === n.characterId)
   );
 
+  const chronicleNameMap: Record<string, string> = {};
+  for (const c of chronicles) chronicleNameMap[c.id] = c.name;
+  const memberChronicleNames = memberships.map(m => chronicleNameMap[m.chronicleId] || "-");
+
   const statusIcon: Record<string, typeof Clock> = {
-    RASCUNHO: Clock,
-    PENDENTE: Clock,
-    APROVADO: CheckCircle,
+    RASCUNHO: Clock, PENDENTE: Clock, APROVADO: CheckCircle,
   };
   const statusColor: Record<string, string> = {
-    RASCUNHO: "text-zinc-500",
-    PENDENTE: "text-yellow-400",
-    APROVADO: "text-green-400",
+    RASCUNHO: "text-zinc-500", PENDENTE: "text-yellow-400", APROVADO: "text-green-400",
   };
 
   return (
@@ -79,9 +79,9 @@ export default async function JogadorDetailPage(props: { params: Promise<{ id: s
           <section>
             <h2 className="text-lg font-semibold mb-3">Crônicas</h2>
             <div className="flex flex-wrap gap-2">
-              {memberships.map(m => (
-                <span key={m.id} className="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-300">
-                  {m.chronicle.name}
+              {memberChronicleNames.map((name, i) => (
+                <span key={i} className="rounded-full bg-zinc-800 px-3 py-1 text-xs text-zinc-300">
+                  {name}
                 </span>
               ))}
             </div>
@@ -93,7 +93,7 @@ export default async function JogadorDetailPage(props: { params: Promise<{ id: s
               <p className="text-sm text-zinc-500">Nenhuma ficha neste personagem.</p>
             ) : (
               <div className="space-y-2">
-                {characters.map(c => {
+                {characters.map((c: any) => {
                   const StatusIcon = statusIcon[c.status] || Clock;
                   return (
                     <Link
@@ -103,7 +103,7 @@ export default async function JogadorDetailPage(props: { params: Promise<{ id: s
                     >
                       <div>
                         <p className="font-medium text-zinc-200">{c.name}</p>
-                        <p className="text-xs text-zinc-500">{c.chronicle?.name} &middot; {c.edition} &middot; {c.concept || "Sem conceito"}</p>
+                        <p className="text-xs text-zinc-500">{chronicleNameMap[c.chronicleId] || "-"} &middot; {c.edition} &middot; {c.concept || "Sem conceito"}</p>
                       </div>
                       <div className={`flex items-center gap-1 text-xs ${statusColor[c.status] || "text-zinc-500"}`}>
                         <StatusIcon size={14} />
@@ -122,7 +122,7 @@ export default async function JogadorDetailPage(props: { params: Promise<{ id: s
               <p className="text-sm text-zinc-500">Nenhuma nota ou diário.</p>
             ) : (
               <div className="space-y-2">
-                {chronicleNotes.map(n => (
+                {chronicleNotes.map((n: any) => (
                   <div key={n.id} className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4">
                     <div className="flex items-center gap-2 mb-1">
                       <FileText size={14} className="text-zinc-500" />

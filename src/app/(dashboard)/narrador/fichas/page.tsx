@@ -6,7 +6,20 @@ import { ApproveActions } from "./approve-actions";
 export default async function NarradorFichasPage() {
   const session = await verifySession();
 
-  const characters = await db.find("Character", {}, "*, player(name), chronicle(name)", { orderBy: { updatedAt: "desc" } }) as any[];
+  const characters = await db.find("Character", {}, "*", { orderBy: { updatedAt: "desc" } }) as any[];
+
+  const userIds = [...new Set(characters.map(c => c.playerId))];
+  const chronicleIds = [...new Set(characters.map(c => c.chronicleId).filter(Boolean))] as string[];
+
+  const [users, chronicles] = await Promise.all([
+    userIds.length ? db.find("User", { id_in: userIds }, "id,name") as Promise<any[]> : Promise.resolve([] as any[]),
+    chronicleIds.length ? db.find("Chronicle", { id_in: chronicleIds }, "id,name") as Promise<any[]> : Promise.resolve([] as any[]),
+  ]);
+
+  const userMap: Record<string, string> = {};
+  for (const u of users) userMap[u.id] = u.name;
+  const chronicleMap: Record<string, string> = {};
+  for (const c of chronicles) chronicleMap[c.id] = c.name;
 
   const statusColor: Record<string, string> = {
     RASCUNHO: "text-zinc-500",
@@ -54,8 +67,8 @@ export default async function NarradorFichasPage() {
                       {c.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-2 text-zinc-600 dark:text-zinc-400">{c.player?.name}</td>
-                  <td className="px-4 py-2 text-zinc-600 dark:text-zinc-400">{c.chronicle?.name ?? "-"}</td>
+                  <td className="px-4 py-2 text-zinc-600 dark:text-zinc-400">{userMap[c.playerId] || "-"}</td>
+                  <td className="px-4 py-2 text-zinc-600 dark:text-zinc-400">{c.chronicleId ? (chronicleMap[c.chronicleId] || "-") : "-"}</td>
                   <td className="px-4 py-2">
                     <span className="rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] font-semibold dark:bg-zinc-700">{c.edition}</span>
                   </td>

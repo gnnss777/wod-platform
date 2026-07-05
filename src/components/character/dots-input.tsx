@@ -20,7 +20,7 @@ export function DotsInput({
   const dotSize = size === "sm" ? "w-3.5 h-3.5" : "w-5 h-5";
 
   return (
-    <span className="inline-flex gap-0.5">
+    <span className="inline-flex gap-1.5">
       {Array.from({ length: max }, (_, i) => {
         const filled = i < value;
         return (

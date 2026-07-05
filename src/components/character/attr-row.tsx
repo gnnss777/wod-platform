@@ -23,22 +23,24 @@ export function AttrRow({
   min = 1,
 }: Props) {
   return (
-    <div className="flex items-center justify-between gap-2 py-0.5">
-      <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 min-w-24">
+    <div className="flex items-center gap-3 py-1.5">
+      <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1">
         {label}
       </span>
-      <DotsInput
-        value={value}
-        min={min}
-        onChange={(v) => onChange?.(attrKey, v)}
-        readonly={readonly}
-        size="sm"
-      />
-      {abilityValue !== undefined && (
-        <span className="text-xs text-zinc-500 tabular-nums w-6 text-right">
-          {value + abilityValue}
-        </span>
-      )}
+      <div className="flex items-center gap-2 shrink-0">
+        <DotsInput
+          value={value}
+          min={min}
+          onChange={(v) => onChange?.(attrKey, v)}
+          readonly={readonly}
+          size="sm"
+        />
+        {abilityValue !== undefined && (
+          <span className="text-xs text-zinc-500 tabular-nums w-6 text-right">
+            {value + abilityValue}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

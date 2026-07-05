@@ -33,7 +33,7 @@ export default function NarradorNotasPage() {
 
   return (
     <div className="mx-auto max-w-4xl p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Notas do Narrador</h1>
+      <h1 className="text-2xl font-bold">Notas do Mestre</h1>
 
       <form onSubmit={handleSubmit} className="space-y-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <Input id="nota-title" label="Título" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ideia para a sessão..." required />

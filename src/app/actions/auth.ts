@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
@@ -44,7 +44,7 @@ export async function signup(state: FormState, formData: FormData) {
   }
 
   await createSession(user.id, user.role);
-  redirect(user.role === "NARRADOR" ? "/narrador" : "/jogador");
+  redirect(user.role === "MESTRE" || user.role === "NARRADOR" ? "/narrador" : "/jogador");
 }
 
 export async function login(state: FormState, formData: FormData) {
@@ -71,7 +71,7 @@ export async function login(state: FormState, formData: FormData) {
   }
 
   await createSession(user.id, user.role);
-  redirect(user.role === "NARRADOR" ? "/narrador" : "/jogador");
+  redirect(user.role === "MESTRE" || user.role === "NARRADOR" ? "/narrador" : "/jogador");
 }
 
 export async function logout() {

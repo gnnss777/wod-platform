@@ -41,18 +41,19 @@ export async function deleteNote(id: string) {
 
 export async function getNotes(type?: "PESSOAL" | "DIARIO") {
   const session = await verifySession();
-  return db.find("Note", { playerId: session.userId, ...(type ? { type } : {}) }, "*, character(name,id)", { orderBy: { updatedAt: "desc" } }) as Promise<any[]>;
+  return db.find("Note", { playerId: session.userId, ...(type ? { type } : {}) }, "*", { orderBy: { updatedAt: "desc" } }) as Promise<any[]>;
 }
 
 export async function getNote(id: string) {
   const session = await verifySession();
-  const note = await db.get("Note", { id }, "*, character(name,id)") as any;
+  const note = await db.get("Note", { id }, "*") as any;
   if (!note || note.playerId !== session.userId) return null;
   return note;
 }
 
 export async function getPlayerChronicles() {
   const session = await verifySession();
-  const data = await db.find("Chronicle", { status: "ATIVA" }, "*, narrator(name), characters!inner(id, name, playerId)") as any[];
-  return data.filter((c: any) => c.characters?.some((ch: any) => ch.playerId === session.userId));
+  const data = await db.find("Chronicle", { status: "ATIVA" }, "*") as any[];
+  const allChars = await db.find("Character", {}, "id, chronicleId, playerId") as any[];
+  return data.filter((c: any) => allChars.some((ch: any) => ch.chronicleId === c.id && ch.playerId === session.userId));
 }

@@ -1,4 +1,4 @@
-"use server";
+﻿"use server";
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -11,7 +11,7 @@ export async function createNpc(data: {
   powers?: Record<string, number>; notes?: string;
 }) {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") throw new Error("Unauthorized");
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") throw new Error("Unauthorized");
 
   const npc = await db.create("Npc", {
     name: data.name, concept: data.concept ?? null, clan: data.clan ?? null,
@@ -27,7 +27,7 @@ export async function createNpc(data: {
 
 export async function updateNpc(id: string, data: Record<string, unknown>) {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") throw new Error("Unauthorized");
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") throw new Error("Unauthorized");
 
   const safe: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(data)) {
@@ -41,7 +41,7 @@ export async function updateNpc(id: string, data: Record<string, unknown>) {
 
 export async function deleteNpc(id: string) {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") throw new Error("Unauthorized");
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") throw new Error("Unauthorized");
 
   await db.remove("Npc", id);
   revalidatePath("/narrador/npcs");
@@ -50,21 +50,37 @@ export async function deleteNpc(id: string) {
 
 export async function getNpcs(chronicleId?: string) {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") return [];
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") return [];
 
-  return db.find("Npc", { narratorId: session.userId, ...(chronicleId ? { chronicleId } : {}) }, "*, chronicle(name)", { orderBy: { updatedAt: "desc" } }) as Promise<any[]>;
+  const npcs = await db.find("Npc", { narratorId: session.userId, ...(chronicleId ? { chronicleId } : {}) }, "*", { orderBy: { updatedAt: "desc" } }) as any[];
+  return attachChronicleNames(npcs);
 }
 
 export async function getNpc(id: string) {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") return null;
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") return null;
 
-  return db.get("Npc", { id, narratorId: session.userId }, "*, chronicle(name,id)") as Promise<any>;
+  const npc = await db.get("Npc", { id, narratorId: session.userId }, "*") as any;
+  if (!npc) return null;
+  return (await attachChronicleNames([npc]))[0];
+}
+
+async function attachChronicleNames(items: any[]): Promise<any[]> {
+  const chronicleIds = [...new Set(items.map((n: any) => n.chronicleId).filter(Boolean))];
+  const map: Record<string, string> = {};
+  if (chronicleIds.length) {
+    const rows = await db.find("Chronicle", { id_in: chronicleIds }, "id,name");
+    for (const c of rows as any[]) map[c.id] = c.name;
+  }
+  return items.map((n: any) => ({
+    ...n,
+    chronicle: n.chronicleId ? { name: map[n.chronicleId] || "Desconhecida" } : null,
+  }));
 }
 
 export async function getAllPlayers() {
   const session = await verifySession();
-  if (session.role !== "NARRADOR") return [];
+  if (session.role !== "MESTRE" && session.role !== "NARRADOR") return [];
 
   return db.find("User", { role: "JOGADOR" }, "id,name", { orderBy: { name: "asc" } }) as Promise<any[]>;
 }

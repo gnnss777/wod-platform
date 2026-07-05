@@ -73,7 +73,7 @@ export default function RegrasPage() {
         <ul className="list-disc pl-5 space-y-1">
           <li>Gaste 1 ponto para adicionar 3 dados a uma rolagem (antes de rolar)</li>
           <li>Gaste 1 ponto para ativar certos poderes</li>
-          <li>Recuperação: 1 ponto por dia de descanso, ou a critério do Narrador</li>
+          <li>Recuperação: 1 ponto por dia de descanso, ou a critério do Mestre</li>
           <li>Natureza/Comportamento: role sua natureza para recuperar todos os pontos</li>
         </ul>
       </Section>

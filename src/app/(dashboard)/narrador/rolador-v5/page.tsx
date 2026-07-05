@@ -6,7 +6,7 @@ export default function NarradorRoladorV5Page() {
       <div>
         <h1 className="text-2xl font-bold">Rolador de Dados V5</h1>
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Rolagem V5 com Dados de Fome para o Narrador
+          Rolagem V5 com Dados de Fome para o Mestre
         </p>
       </div>
 

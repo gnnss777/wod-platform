@@ -31,9 +31,10 @@ export default async function CenasPage() {
                 {chronicle}
               </h2>
               {(scs as any[]).map((s) => (
-                <div
+                <Link
                   key={s.id}
-                  className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+                  href={`/narrador/cenas/${s.id}`}
+                  className="block rounded-lg border border-zinc-200 bg-white p-4 transition-colors hover:border-zinc-400 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-600"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -52,7 +53,12 @@ export default async function CenasPage() {
                       {s.description}
                     </p>
                   )}
-                </div>
+                  {s.narrativeText && (
+                    <div className="mt-2 text-sm whitespace-pre-wrap text-zinc-500 dark:text-zinc-400">
+                      {s.narrativeText}
+                    </div>
+                  )}
+                </Link>
               ))}
             </div>
           ))}

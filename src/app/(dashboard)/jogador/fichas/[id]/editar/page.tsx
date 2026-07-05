@@ -13,7 +13,8 @@ export default async function EditarFichaPage({
   const session = await verifySession();
   const char = await getCharacter(id);
 
-  if (!char || char.playerId !== session.userId) notFound();
+  if (!char) notFound();
+  if (char.playerId !== session.userId && session.role !== "MESTRE" && session.role !== "NARRADOR") notFound();
 
   return (
     <div className="mx-auto max-w-5xl p-6 space-y-6">

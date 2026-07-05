@@ -20,7 +20,7 @@ export default async function CronicaPage() {
             Você não está em nenhuma crônica ativa no momento.
           </p>
           <p className="text-xs text-zinc-400 mt-1">
-            Quando o Narrador te adicionar a uma crônica, ela aparecerá aqui.
+            Quando o Mestre te adicionar a uma crônica, ela aparecerá aqui.
           </p>
         </div>
       ) : (
@@ -42,6 +42,15 @@ export default async function CronicaPage() {
                   {c.status}
                 </span>
               </div>
+
+              {(c as any).narrativeText && (
+                <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 mb-4">
+                  <h4 className="text-sm font-semibold mb-2">Narrativa da Crônica</h4>
+                  <div className="text-sm whitespace-pre-wrap text-zinc-600 dark:text-zinc-400">
+                    {(c as any).narrativeText}
+                  </div>
+                </div>
+              )}
 
               {c.description && (
                 <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">

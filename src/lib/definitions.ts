@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 export const SignupFormSchema = z.object({
   name: z
@@ -10,13 +10,17 @@ export const SignupFormSchema = z.object({
     .string()
     .min(6, "Senha precisa ter pelo menos 6 caracteres")
     .trim(),
-  role: z.enum(["JOGADOR", "NARRADOR"]).default("JOGADOR"),
+  role: z.enum(["JOGADOR", "NARRADOR", "MESTRE"]).default("JOGADOR"),
 });
 
 export const LoginFormSchema = z.object({
   email: z.string().email("Email inválido").trim(),
   password: z.string().min(1, "Senha é obrigatória"),
 });
+
+export function isMestre(role: string): boolean {
+  return role === "MESTRE" || role === "NARRADOR";
+}
 
 export type FormState =
   | {

@@ -17,6 +17,7 @@ export default async function FichaPage({
   if (!char) notFound();
 
   const isOwner = char.playerId === session.userId;
+  const canEdit = isOwner || session.role === "MESTRE" || session.role === "NARRADOR";
 
   return (
     <div className="mx-auto max-w-5xl p-6">
@@ -26,7 +27,7 @@ export default async function FichaPage({
       >
         &larr; Voltar
       </Link>
-      <CharacterSheet char={char as unknown as CharacterData} isOwner={isOwner} />
+      <CharacterSheet char={char as unknown as CharacterData} isOwner={isOwner} canEdit={canEdit} />
     </div>
   );
 }

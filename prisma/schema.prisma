@@ -40,12 +40,16 @@ model User {
   narratorNotes    NarratorNote[]
   sessions         LiveSession[]
   sessionMessages  SessionMessage[]
+  documents        StoryDocument[]
+  privateNotes     PrivateNote[]    @relation("NarratorPrivateNotes")
+  receivedNotes    PrivateNote[]    @relation("PlayerPrivateNotes")
 }
 
 model Chronicle {
   id          String          @id @default(cuid())
   name        String
   description String?
+  narrativeText String?
   edition     GameEdition?
   status      ChronicleStatus @default(ATIVA)
   narratorId  String
@@ -94,6 +98,24 @@ model Character {
   clan       String?
   generation Int?
   sect       String?
+
+  sire          String?
+  ambition      String?
+  desire        String?
+  predatorType  String?
+
+  age         Int?
+  apparentAge Int?
+  appearance  String?
+  personality String?
+  history     String?
+  goals       String?
+  weakness    String?
+
+  touchstones   String?
+  convictions   String?
+  alliesContacts String?
+  possessions   String?
 
   attributes   Json @default("{}")
   abilities    Json @default("{}")
@@ -164,6 +186,7 @@ model Scene {
   id          String   @id @default(cuid())
   title       String
   description String?
+  narrativeText String?
   chapter     Int?
   chronicleId String
   narratorId  String
@@ -223,6 +246,39 @@ model InitiativeEntry {
   createdAt DateTime @default(now())
 
   session LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model StoryDocument {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   @default("TEXT")
+  content     String?
+  fileUrl     String?  @map("file_url")
+  chronicleId String?  @map("chronicle_id")
+  sceneId     String?  @map("scene_id")
+  narratorId  String   @map("narrator_id")
+  visibleToPlayers Boolean @default(false) @map("visible_to_players")
+  scheduledFor  DateTime? @map("scheduled_for")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  narrator  User      @relation(fields: [narratorId], references: [id])
+  chronicle Chronicle? @relation(fields: [chronicleId], references: [id], onDelete: SetNull)
+  scene     Scene?     @relation(fields: [sceneId], references: [id], onDelete: SetNull)
+}
+
+model PrivateNote {
+  id         String   @id @default(cuid())
+  narratorId String   @map("narrator_id")
+  playerId   String   @map("player_id")
+  chronicleId String? @map("chronicle_id")
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  narrator  User      @relation("NarratorPrivateNotes", fields: [narratorId], references: [id])
+  player    User      @relation("PlayerPrivateNotes", fields: [playerId], references: [id])
+  chronicle Chronicle? @relation(fields: [chronicleId], references: [id], onDelete: SetNull)
 }
 
 model SessionMessage {

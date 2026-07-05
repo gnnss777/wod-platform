@@ -2,8 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getChronicle, removeCharacterFromChronicle } from "@/app/actions/chronicle";
 import { getNpcs } from "@/app/actions/npc";
-import { getScenes } from "@/app/actions/scene";
-import { approveCharacter, rejectCharacter } from "@/app/actions/scene";
+import { getScenes, approveCharacter, rejectCharacter, deleteScene } from "@/app/actions/scene";
 import { db } from "@/lib/db";
 
 export default async function CronicaDetailPage({
@@ -17,8 +16,9 @@ export default async function CronicaDetailPage({
 
   const [allPlayers, availableChars] = await Promise.all([
     db.find("User", { role: "JOGADOR" }, "id,name", { orderBy: { name: "asc" } }),
-    db.find("Character", {}, "*, player(name)", { orderBy: { name: "asc" } }) as Promise<any[]>,
+    db.find("Character", {}, "*", { orderBy: { name: "asc" } }) as Promise<any[]>,
   ]);
+  const userMap = Object.fromEntries((allPlayers as any[]).map((u: any) => [u.id, u.name]));
 
   return (
     <div className="mx-auto max-w-6xl p-6 space-y-8">
@@ -53,6 +53,17 @@ export default async function CronicaDetailPage({
       {(chronicle as any).description && (
         <p className="text-sm text-zinc-600 dark:text-zinc-400">{(chronicle as any).description}</p>
       )}
+
+      <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900 space-y-2">
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Narrativa da Crônica</h3>
+        {(chronicle as any).narrativeText ? (
+          <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap">
+            {(chronicle as any).narrativeText}
+          </div>
+        ) : (
+          <p className="text-sm text-zinc-400 italic">Nenhum texto narrativo definido. <Link href={`/narrador/cronicas/${id}/editar`} className="underline">Editar crônica</Link></p>
+        )}
+      </div>
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Personagens ({(chronicle as any).characters.length})</h2>
@@ -107,7 +118,7 @@ export default async function CronicaDetailPage({
                 await addCharacterToChronicle(ch.id, id);
               }}>
                 <button className="w-full text-left rounded px-2 py-1 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                  {ch.name} ({ch.player?.name})
+                  {ch.name} ({ch.playerId ? (userMap[ch.playerId] || "Desconhecido") : "Nenhum"})
                 </button>
               </form>
             ))}
@@ -152,15 +163,26 @@ export default async function CronicaDetailPage({
             {(chronicle as any).scenes.map((scene: any, i: number) => (
               <div key={scene.id} className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-sm font-medium">
+                  <Link href={`/narrador/cenas/${scene.id}`} className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium hover:text-crimson-light transition-colors">
                       {scene.order && `#${scene.order} `}{scene.title}
                     </h3>
                     {scene.chapter && <p className="text-xs text-zinc-500">Capítulo {scene.chapter}</p>}
+                  </Link>
+                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                    <Link href={`/narrador/cenas/${scene.id}`} className="text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
+                      Editar
+                    </Link>
+                    <form action={async () => { "use server"; await deleteScene(scene.id); }}>
+                      <button className="text-xs text-red-500 hover:underline">Excluir</button>
+                    </form>
                   </div>
                 </div>
                 {scene.description && (
                   <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">{scene.description}</p>
+                )}
+                {scene.narrativeText && (
+                  <div className="mt-2 whitespace-pre-wrap text-xs text-zinc-500 dark:text-zinc-400">{scene.narrativeText}</div>
                 )}
               </div>
             ))}
@@ -186,6 +208,7 @@ function AddSceneForm({ chronicleId }: { chronicleId: string }) {
         await createScene({
           title: form.get("title") as string,
           description: form.get("description") as string || undefined,
+          narrativeText: form.get("narrativeText") as string || undefined,
           chapter: form.get("chapter") ? parseInt(form.get("chapter") as string) : undefined,
           chronicleId,
         });
@@ -201,6 +224,12 @@ function AddSceneForm({ chronicleId }: { chronicleId: string }) {
       <input
         name="description"
         placeholder="Descrição rápida..."
+        className="w-full rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+      />
+      <textarea
+        name="narrativeText"
+        placeholder="Texto narrativo (opcional)"
+        rows={3}
         className="w-full rounded border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
       />
       <input

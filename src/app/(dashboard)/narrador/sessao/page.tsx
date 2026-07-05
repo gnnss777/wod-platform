@@ -8,13 +8,21 @@ export default async function SessaoPage() {
   const session = await verifySession();
   const chronicles = await getChronicles();
 
-  const activeSessions = await db.find("LiveSession", { narratorId: session.userId, status: "ACTIVE" }, "*, chronicle(name)") as any[];
+  const activeSessions = await db.find("LiveSession", { narratorId: session.userId, status: "ACTIVE" }, "*") as any[];
+
+  const chronicleIds = [...new Set(activeSessions.map((s: any) => s.chronicleId).filter(Boolean))];
+  const chronicleMap: Record<string, string> = {};
+  if (chronicleIds.length) {
+    const rows = await db.find("Chronicle", { id_in: chronicleIds }, "id,name");
+    for (const c of rows as any[]) chronicleMap[c.id] = c.name;
+  }
 
   for (const s of activeSessions) {
     const [initCount, msgCount] = await Promise.all([
       db.count("InitiativeEntry", { sessionId: s.id }),
       db.count("SessionMessage", { sessionId: s.id }),
     ]);
+    s.chronicle = s.chronicleId ? { name: chronicleMap[s.chronicleId] || "Desconhecida" } : null;
     s._count = { initiative: initCount, messages: msgCount };
   }
 

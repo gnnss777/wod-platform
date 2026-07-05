@@ -20,15 +20,15 @@ export function AbilityCol({
 }: Props) {
   return (
     <div className="space-y-0.5">
-      <h4 className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold mb-1">
+      <h4 className="text-[10px] uppercase tracking-wider text-zinc-500 font-semibold mb-1.5">
         {title}
       </h4>
       {keys.map((k) => (
         <div
           key={k}
-          className="flex items-center justify-between gap-1 py-0.5"
+          className="flex items-center gap-3 py-1"
         >
-          <span className="text-xs text-zinc-700 dark:text-zinc-300 flex-1">
+          <span className="text-xs text-zinc-700 dark:text-zinc-300 truncate min-w-0 flex-1">
             {LABELS[k] ?? k}
           </span>
           <DotsInput

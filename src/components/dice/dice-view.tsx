@@ -55,7 +55,7 @@ export function DiceResultView({ result }: { result: RollResult }) {
       )}
       {result.botch && !result.bestialFailure && (
         <p className="text-xs text-red-500">
-          Algo deu muito errado. O Narrador decide o destino do seu personagem.
+          Algo deu muito errado. O Mestre decide o destino do seu personagem.
         </p>
       )}
 

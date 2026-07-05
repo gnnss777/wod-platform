@@ -48,12 +48,12 @@ export function RegisterForm() {
             </div>
           </label>
           <label className="flex flex-1 cursor-pointer items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-900 p-3 has-[:checked]:border-amber-600 has-[:checked]:bg-amber-900/10 transition-colors">
-            <input type="radio" name="role" value="NARRADOR" className="sr-only" />
+            <input type="radio" name="role" value="MESTRE" className="sr-only" />
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-sm text-zinc-400 has-[:checked]:bg-amber-900 has-[:checked]:text-amber-200">
               🎭
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-zinc-100">Narrador</span>
+              <span className="text-sm font-medium text-zinc-100">Mestre</span>
               <span className="text-[10px] text-zinc-500">Crie crônicas, NPCs e cenas</span>
             </div>
           </label>

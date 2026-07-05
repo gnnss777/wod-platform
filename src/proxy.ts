@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decrypt } from "@/lib/session";
 
@@ -21,11 +21,11 @@ export async function proxy(request: NextRequest) {
 
   if (isPublicRoute && session?.userId) {
     const dashboard =
-      session.role === "NARRADOR" ? "/narrador" : "/jogador";
+      session.role === "MESTRE" || session.role === "NARRADOR" ? "/narrador" : "/jogador";
     return NextResponse.redirect(new URL(dashboard, request.nextUrl));
   }
 
-  if (path.startsWith("/narrador") && session?.role !== "NARRADOR") {
+  if (path.startsWith("/narrador") && session?.role !== "MESTRE" && session?.role !== "NARRADOR") {
     return NextResponse.redirect(new URL("/jogador", request.nextUrl));
   }
 

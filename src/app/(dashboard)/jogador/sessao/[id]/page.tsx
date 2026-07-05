@@ -34,6 +34,9 @@ export default async function JogadorSessaoPage({
           {currentScene.description && (
             <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">{currentScene.description}</p>
           )}
+          {currentScene.narrativeText && (
+            <div className="mt-2 whitespace-pre-wrap text-sm text-zinc-500 dark:text-zinc-400">{currentScene.narrativeText}</div>
+          )}
         </div>
       )}
 

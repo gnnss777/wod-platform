@@ -8,6 +8,7 @@ type Scene = {
   id: string;
   title: string;
   description: string | null;
+  narrativeText: string | null;
   order: number | null;
 };
 
