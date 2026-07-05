@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getSession, endSession } from "@/app/actions/session";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { InitiativePanel } from "@/components/session/initiative-panel";
 import { ChatPanel } from "@/components/session/chat-panel";
 import { SceneSelector } from "@/components/session/scene-selector";
@@ -15,12 +15,9 @@ export default async function LiveSessionPage({
   const session = await getSession(id);
   if (!session) notFound();
 
-  const scenes = await prisma.scene.findMany({
-    where: { chronicleId: session.chronicleId },
-    orderBy: { order: "asc" },
-  });
+  const scenes = await db.find("Scene", { chronicleId: (session as any).chronicleId }, "*", { orderBy: { order: "asc" } }) as any[];
 
-  const currentScene = scenes.find((s) => s.id === session.currentSceneId);
+  const currentScene = scenes.find((s) => s.id === (session as any).currentSceneId);
 
   return (
     <div className="mx-auto max-w-7xl p-4 space-y-4">
@@ -30,7 +27,7 @@ export default async function LiveSessionPage({
             &larr; Sessões
           </Link>
           <h1 className="text-xl font-bold mt-0.5">
-            {session.chronicle.name}
+            {(session as any).chronicle.name}
           </h1>
         </div>
         <div className="flex items-center gap-2">
@@ -55,11 +52,11 @@ export default async function LiveSessionPage({
         </div>
       )}
 
-      <SceneSelector sessionId={id} scenes={scenes} currentSceneId={session.currentSceneId} />
+      <SceneSelector sessionId={id} scenes={scenes} currentSceneId={(session as any).currentSceneId} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <InitiativePanel sessionId={id} entries={session.initiative} />
-        <ChatPanel sessionId={id} messages={session.messages as never[]} isNarrator />
+        <InitiativePanel sessionId={id} entries={(session as any).initiative || []} />
+        <ChatPanel sessionId={id} messages={(session as any).messages as never[]} isNarrator />
       </div>
     </div>
   );

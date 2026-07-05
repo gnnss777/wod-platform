@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getNote } from "@/app/actions/note";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { verifySession } from "@/lib/dal";
 import { NoteEditor } from "@/components/notes/note-editor";
 
@@ -15,10 +15,7 @@ export default async function EditarNotaPage({
   const note = await getNote(id);
   if (!note) notFound();
 
-  const characters = await prisma.character.findMany({
-    where: { playerId: session.userId },
-    select: { id: true, name: true },
-  });
+  const characters = await db.find("Character", { playerId: session.userId }, "id,name");
 
   return (
     <div className="mx-auto max-w-3xl p-6 space-y-6">
@@ -33,8 +30,8 @@ export default async function EditarNotaPage({
       </div>
       <NoteEditor
         type="PESSOAL"
-        characters={characters}
-        initial={{ id: note.id, title: note.title, content: note.content, characterId: note.characterId }}
+        characters={characters as any}
+        initial={{ id: (note as any).id, title: (note as any).title, content: (note as any).content, characterId: (note as any).characterId }}
       />
     </div>
   );

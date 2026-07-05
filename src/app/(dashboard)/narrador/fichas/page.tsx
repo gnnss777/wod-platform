@@ -1,17 +1,11 @@
 import Link from "next/link";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { verifySession } from "@/lib/dal";
 
 export default async function NarradorFichasPage() {
   const session = await verifySession();
 
-  const characters = await prisma.character.findMany({
-    include: {
-      player: { select: { name: true } },
-      chronicle: { select: { name: true } },
-    },
-    orderBy: { updatedAt: "desc" },
-  });
+  const characters = await db.find("Character", {}, "*, player(name), chronicle(name)", { orderBy: { updatedAt: "desc" } }) as any[];
 
   return (
     <div className="mx-auto max-w-6xl p-6 space-y-6">
@@ -53,7 +47,7 @@ export default async function NarradorFichasPage() {
                     </Link>
                   </td>
                   <td className="px-4 py-2 text-zinc-600 dark:text-zinc-400">
-                    {c.player.name}
+                    {c.player?.name}
                   </td>
                   <td className="px-4 py-2 text-zinc-600 dark:text-zinc-400">
                     {c.chronicle?.name ?? "-"}
@@ -64,7 +58,7 @@ export default async function NarradorFichasPage() {
                     </span>
                   </td>
                   <td className="px-4 py-2 text-zinc-500 text-xs">
-                    {c.updatedAt.toLocaleDateString("pt-BR")}
+                    {new Date(c.updatedAt).toLocaleDateString("pt-BR")}
                   </td>
                 </tr>
               ))}

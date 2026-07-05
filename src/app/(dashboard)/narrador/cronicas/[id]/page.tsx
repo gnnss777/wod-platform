@@ -4,7 +4,7 @@ import { getChronicle, removeCharacterFromChronicle } from "@/app/actions/chroni
 import { getNpcs } from "@/app/actions/npc";
 import { getScenes } from "@/app/actions/scene";
 import { approveCharacter, rejectCharacter } from "@/app/actions/scene";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export default async function CronicaDetailPage({
   params,
@@ -15,22 +15,10 @@ export default async function CronicaDetailPage({
   const chronicle = await getChronicle(id);
   if (!chronicle) notFound();
 
-  const allPlayers = await prisma.user.findMany({
-    where: { role: "JOGADOR" },
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
-
-  const availableChars = await prisma.character.findMany({
-    where: {
-      OR: [
-        { chronicleId: null },
-        { chronicleId: id },
-      ],
-    },
-    include: { player: { select: { name: true } } },
-    orderBy: { name: "asc" },
-  });
+  const [allPlayers, availableChars] = await Promise.all([
+    db.find("User", { role: "JOGADOR" }, "id,name", { orderBy: { name: "asc" } }),
+    db.find("Character", {}, "*, player(name)", { orderBy: { name: "asc" } }) as Promise<any[]>,
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl p-6 space-y-8">
@@ -39,19 +27,19 @@ export default async function CronicaDetailPage({
           <Link href="/narrador/cronicas" className="text-sm text-zinc-500 hover:underline">
             &larr; Crônicas
           </Link>
-          <h1 className="text-2xl font-bold mt-1">{chronicle.name}</h1>
+          <h1 className="text-2xl font-bold mt-1">{(chronicle as any).name}</h1>
           <p className="text-sm text-zinc-500">
-            {chronicle.edition && `${chronicle.edition} · `}
-            {chronicle._count.characters} personagens · {chronicle._count.npcs} NPCs · {chronicle._count.scenes} cenas
+            {(chronicle as any).edition && `${(chronicle as any).edition} · `}
+            {(chronicle as any)._count.characters} personagens · {(chronicle as any)._count.npcs} NPCs · {(chronicle as any)._count.scenes} cenas
           </p>
         </div>
         <div className="flex gap-2">
           <span className={`rounded px-2 py-1 text-xs font-semibold ${
-            chronicle.status === "ATIVA"
+            (chronicle as any).status === "ATIVA"
               ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
               : "bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400"
           }`}>
-            {chronicle.status === "ATIVA" ? "Ativa" : "Encerrada"}
+            {(chronicle as any).status === "ATIVA" ? "Ativa" : "Encerrada"}
           </span>
           <Link
             href={`/narrador/cronicas/${id}/editar`}
@@ -62,17 +50,17 @@ export default async function CronicaDetailPage({
         </div>
       </div>
 
-      {chronicle.description && (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">{chronicle.description}</p>
+      {(chronicle as any).description && (
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{(chronicle as any).description}</p>
       )}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Personagens ({chronicle.characters.length})</h2>
-        {chronicle.characters.length === 0 ? (
+        <h2 className="text-lg font-semibold">Personagens ({(chronicle as any).characters.length})</h2>
+        {(chronicle as any).characters.length === 0 ? (
           <p className="text-sm text-zinc-500">Nenhum personagem nesta crônica.</p>
         ) : (
           <div className="space-y-2">
-            {chronicle.characters.map((ch) => (
+            {(chronicle as any).characters.map((ch: any) => (
               <div key={ch.id} className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
                 <div>
                   <Link href={`/jogador/fichas/${ch.id}`} className="font-medium text-sm hover:underline">
@@ -112,14 +100,14 @@ export default async function CronicaDetailPage({
             Adicionar personagem à crônica
           </summary>
           <div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
-            {availableChars.filter(ch => ch.chronicleId !== id).map(ch => (
+            {availableChars.filter((ch: any) => ch.chronicleId !== id).map((ch: any) => (
               <form key={ch.id} action={async () => {
                 "use server";
                 const { addCharacterToChronicle } = await import("@/app/actions/chronicle");
                 await addCharacterToChronicle(ch.id, id);
               }}>
                 <button className="w-full text-left rounded px-2 py-1 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                  {ch.name} ({ch.player.name})
+                  {ch.name} ({ch.player?.name})
                 </button>
               </form>
             ))}
@@ -129,7 +117,7 @@ export default async function CronicaDetailPage({
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">NPCs ({chronicle.npcs.length})</h2>
+          <h2 className="text-lg font-semibold">NPCs ({(chronicle as any).npcs.length})</h2>
           <Link
             href={`/narrador/npcs/novo?chronicle=${id}`}
             className="text-xs font-medium text-zinc-900 underline dark:text-zinc-100"
@@ -137,11 +125,11 @@ export default async function CronicaDetailPage({
             + Novo NPC
           </Link>
         </div>
-        {chronicle.npcs.length === 0 ? (
+        {(chronicle as any).npcs.length === 0 ? (
           <p className="text-sm text-zinc-500">Nenhum NPC nesta crônica.</p>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {chronicle.npcs.map((npc) => (
+            {(chronicle as any).npcs.map((npc: any) => (
               <Link
                 key={npc.id}
                 href={`/narrador/npcs/${npc.id}`}
@@ -156,12 +144,12 @@ export default async function CronicaDetailPage({
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Cenas ({chronicle.scenes.length})</h2>
-        {chronicle.scenes.length === 0 ? (
+        <h2 className="text-lg font-semibold">Cenas ({(chronicle as any).scenes.length})</h2>
+        {(chronicle as any).scenes.length === 0 ? (
           <p className="text-sm text-zinc-500">Nenhuma cena planejada.</p>
         ) : (
           <div className="space-y-2">
-            {chronicle.scenes.map((scene, i) => (
+            {(chronicle as any).scenes.map((scene: any, i: number) => (
               <div key={scene.id} className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="flex items-start justify-between">
                   <div>

@@ -1,13 +1,13 @@
 import { verifySession } from "@/lib/dal";
 import { getChronicles } from "@/app/actions/chronicle";
 import { getNpcs } from "@/app/actions/npc";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export default async function NarradorDashboard() {
   const session = await verifySession();
   const chronicles = await getChronicles();
   const npcs = await getNpcs();
-  const pendingChars = await prisma.character.count({ where: { status: "PENDENTE" } });
+  const pendingChars = await db.count("Character", { status: "PENDENTE" });
 
   const stats = {
     cronicas: chronicles.length,

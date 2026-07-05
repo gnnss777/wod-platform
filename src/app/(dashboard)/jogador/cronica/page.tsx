@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPlayerChronicles } from "@/app/actions/note";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export default async function CronicaPage() {
   const chronicles = await getPlayerChronicles();
@@ -76,16 +76,13 @@ export default async function CronicaPage() {
 }
 
 async function ActiveSession({ chronicleId }: { chronicleId: string }) {
-  const session = await prisma.liveSession.findFirst({
-    where: { chronicleId, status: "ACTIVE" },
-    select: { id: true },
-  });
+  const session = await db.get("LiveSession", { chronicleId, status: "ACTIVE" }, "id");
   if (!session) return null;
 
   return (
     <div className="mt-3">
       <Link
-        href={`/jogador/sessao/${session.id}`}
+        href={`/jogador/sessao/${(session as any).id}`}
         className="inline-flex items-center gap-1.5 rounded-lg border border-green-300 bg-green-50 px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-100 dark:border-green-700 dark:bg-green-900/30 dark:text-green-300"
       >
         <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />

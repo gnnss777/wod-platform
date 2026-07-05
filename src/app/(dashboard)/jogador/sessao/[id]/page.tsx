@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/app/actions/session";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { ChatPanel } from "@/components/session/chat-panel";
 
 export default async function JogadorSessaoPage({
@@ -13,18 +13,15 @@ export default async function JogadorSessaoPage({
   const session = await getSession(id);
   if (!session) notFound();
 
-  const scenes = await prisma.scene.findMany({
-    where: { chronicleId: session.chronicleId },
-    orderBy: { order: "asc" },
-  });
+  const scenes = await db.find("Scene", { chronicleId: (session as any).chronicleId }, "*", { orderBy: { order: "asc" } }) as any[];
 
-  const currentScene = scenes.find((s) => s.id === session.currentSceneId);
-  const activeChar = session.initiative.find((e) => e.isActive);
+  const currentScene = scenes.find((s) => s.id === (session as any).currentSceneId);
+  const activeChar = (session as any).initiative?.find((e: any) => e.isActive);
 
   return (
     <div className="mx-auto max-w-4xl p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">{session.chronicle.name}</h1>
+        <h1 className="text-xl font-bold">{(session as any).chronicle.name}</h1>
         <span className="rounded bg-green-200 px-2 py-0.5 text-[10px] font-semibold text-green-800 dark:bg-green-800 dark:text-green-200">
           AO VIVO
         </span>
@@ -53,7 +50,7 @@ export default async function JogadorSessaoPage({
         <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
           <h3 className="text-sm font-semibold mb-2">Iniciativa</h3>
           <div className="space-y-1">
-            {session.initiative.map((e) => (
+            {(session as any).initiative?.map((e: any) => (
               <div
                 key={e.id}
                 className={`flex items-center justify-between rounded px-2 py-1 text-sm ${
@@ -66,13 +63,13 @@ export default async function JogadorSessaoPage({
                 <span className="text-xs text-zinc-500 tabular-nums">{e.value}</span>
               </div>
             ))}
-            {session.initiative.length === 0 && (
+            {!(session as any).initiative?.length && (
               <p className="text-xs text-zinc-500">Aguardando...</p>
             )}
           </div>
         </div>
 
-        <ChatPanel sessionId={id} messages={session.messages as never[]} isNarrator={false} />
+        <ChatPanel sessionId={id} messages={(session as any).messages as never[]} isNarrator={false} />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export async function GET(
   _request: Request,
@@ -7,12 +7,7 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const messages = await prisma.sessionMessage.findMany({
-    where: { sessionId: id },
-    orderBy: { createdAt: "asc" },
-    take: 100,
-    include: { user: { select: { name: true, role: true } } },
-  });
+  const messages = await db.find("SessionMessage", { sessionId: id }, "*, user(name,role)", { orderBy: { createdAt: "asc" }, take: 100 });
 
   return NextResponse.json(messages);
 }

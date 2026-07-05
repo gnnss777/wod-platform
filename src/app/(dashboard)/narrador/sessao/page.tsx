@@ -1,17 +1,22 @@
 import Link from "next/link";
 import { getChronicles } from "@/app/actions/chronicle";
 import { startSession } from "@/app/actions/session";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { verifySession } from "@/lib/dal";
 
 export default async function SessaoPage() {
   const session = await verifySession();
   const chronicles = await getChronicles();
 
-  const activeSessions = await prisma.liveSession.findMany({
-    where: { narratorId: session.userId, status: "ACTIVE" },
-    include: { chronicle: { select: { name: true } }, _count: { select: { initiative: true, messages: true } } },
-  });
+  const activeSessions = await db.find("LiveSession", { narratorId: session.userId, status: "ACTIVE" }, "*, chronicle(name)") as any[];
+
+  for (const s of activeSessions) {
+    const [initCount, msgCount] = await Promise.all([
+      db.count("InitiativeEntry", { sessionId: s.id }),
+      db.count("SessionMessage", { sessionId: s.id }),
+    ]);
+    s._count = { initiative: initCount, messages: msgCount };
+  }
 
   return (
     <div className="mx-auto max-w-5xl p-6 space-y-6">
@@ -28,7 +33,7 @@ export default async function SessaoPage() {
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-semibold text-sm">{s.chronicle.name}</h3>
+                  <h3 className="font-semibold text-sm">{s.chronicle?.name}</h3>
                   <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
                     Iniciativa: {s._count.initiative} · Mensagens: {s._count.messages}
                   </p>
@@ -58,7 +63,7 @@ export default async function SessaoPage() {
                 >
                   <h3 className="font-semibold text-sm">{c.name}</h3>
                   <p className="text-xs text-zinc-500 mt-0.5">
-                    {c._count.characters} personagens · {c._count.npcs} NPCs
+                    {(c as any)._count.characters} personagens · {(c as any)._count.npcs} NPCs
                   </p>
                 </button>
               </form>
