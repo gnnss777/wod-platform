@@ -12,13 +12,14 @@ export async function signup(state: FormState, formData: FormData) {
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
+    role: formData.get("role"),
   });
 
   if (!validatedFields.success) {
     return { errors: validatedFields.error.flatten().fieldErrors };
   }
 
-  const { name, email, password } = validatedFields.data;
+  const { name, email, password, role } = validatedFields.data;
 
   const { data: existing } = await supabaseAdmin.from("User").select("id").eq("email", email).single();
   if (existing) {
@@ -33,7 +34,7 @@ export async function signup(state: FormState, formData: FormData) {
     name,
     email,
     password: hashedPassword,
-    role: "JOGADOR",
+    role,
     createdAt: now,
     updatedAt: now,
   }).select().single();
@@ -43,7 +44,7 @@ export async function signup(state: FormState, formData: FormData) {
   }
 
   await createSession(user.id, user.role);
-  redirect("/jogador");
+  redirect(user.role === "NARRADOR" ? "/narrador" : "/jogador");
 }
 
 export async function login(state: FormState, formData: FormData) {

@@ -10,6 +10,7 @@ export const SignupFormSchema = z.object({
     .string()
     .min(6, "Senha precisa ter pelo menos 6 caracteres")
     .trim(),
+  role: z.enum(["JOGADOR", "NARRADOR"]).default("JOGADOR"),
 });
 
 export const LoginFormSchema = z.object({
@@ -23,6 +24,7 @@ export type FormState =
         name?: string[];
         email?: string[];
         password?: string[];
+        role?: string[];
       };
       message?: string;
     }
