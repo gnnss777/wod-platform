@@ -52,19 +52,19 @@ export async function getNpcs(chronicleId?: string) {
   const session = await verifySession();
   if (session.role !== "NARRADOR") return [];
 
-  return db.find("Npc", { narratorId: session.userId, ...(chronicleId ? { chronicleId } : {}) }, "*, chronicle(name)", { orderBy: { updatedAt: "desc" } });
+  return db.find("Npc", { narratorId: session.userId, ...(chronicleId ? { chronicleId } : {}) }, "*, chronicle(name)", { orderBy: { updatedAt: "desc" } }) as Promise<any[]>;
 }
 
 export async function getNpc(id: string) {
   const session = await verifySession();
   if (session.role !== "NARRADOR") return null;
 
-  return db.get("Npc", { id, narratorId: session.userId }, "*, chronicle(name,id)");
+  return db.get("Npc", { id, narratorId: session.userId }, "*, chronicle(name,id)") as Promise<any>;
 }
 
 export async function getAllPlayers() {
   const session = await verifySession();
   if (session.role !== "NARRADOR") return [];
 
-  return db.find("User", { role: "JOGADOR" }, "id,name", { orderBy: { name: "asc" } });
+  return db.find("User", { role: "JOGADOR" }, "id,name", { orderBy: { name: "asc" } }) as Promise<any[]>;
 }

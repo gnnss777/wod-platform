@@ -37,7 +37,7 @@ export async function getScenes(chronicleId?: string) {
   const session = await verifySession();
   if (session.role !== "NARRADOR") return [];
 
-  return db.find("Scene", { narratorId: session.userId, ...(chronicleId ? { chronicleId } : {}) }, "*, chronicle(name)", { orderBy: [{ chronicleId: "asc" }, { order: "asc" }] });
+  return db.find("Scene", { narratorId: session.userId, ...(chronicleId ? { chronicleId } : {}) }, "*, chronicle(name)", { orderBy: [{ chronicleId: "asc" }, { order: "asc" }] }) as Promise<any[]>;
 }
 
 export async function approveCharacter(id: string) {

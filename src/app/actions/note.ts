@@ -41,13 +41,13 @@ export async function deleteNote(id: string) {
 
 export async function getNotes(type?: "PESSOAL" | "DIARIO") {
   const session = await verifySession();
-  return db.find("Note", { playerId: session.userId, ...(type ? { type } : {}) }, "*, character(name,id)", { orderBy: { updatedAt: "desc" } });
+  return db.find("Note", { playerId: session.userId, ...(type ? { type } : {}) }, "*, character(name,id)", { orderBy: { updatedAt: "desc" } }) as Promise<any[]>;
 }
 
 export async function getNote(id: string) {
   const session = await verifySession();
-  const note = await db.get("Note", { id }, "*, character(name,id)");
-  if (!note || (note as any).playerId !== session.userId) return null;
+  const note = await db.get("Note", { id }, "*, character(name,id)") as any;
+  if (!note || note.playerId !== session.userId) return null;
   return note;
 }
 

@@ -71,15 +71,15 @@ export async function deleteCharacter(id: string) {
 export async function getCharactersForUser(userId?: string) {
   const session = await verifySession();
   const where = userId ? { playerId: userId } : { playerId: session.userId };
-  return db.find("Character", where, "*, chronicle(name)", { orderBy: { updatedAt: "desc" } });
+  return db.find("Character", where, "*, chronicle(name)", { orderBy: { updatedAt: "desc" } }) as Promise<any[]>;
 }
 
 export async function getCharacter(id: string) {
   const session = await verifySession();
-  const char = await db.get("Character", { id }, "*, player(name), chronicle(name)");
+  const char = await db.get("Character", { id }, "*, player(name), chronicle(name)") as any;
   if (!char) return null;
 
-  if ((char as any).playerId !== session.userId && session.role !== "NARRADOR") return null;
+  if (char.playerId !== session.userId && session.role !== "NARRADOR") return null;
 
   return char;
 }

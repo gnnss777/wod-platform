@@ -3,7 +3,7 @@ import { getNotes } from "@/app/actions/note";
 import { NoteList } from "@/components/notes/note-list";
 
 export default async function DiarioPage() {
-  const entries = await getNotes("DIARIO");
+  const entries = await getNotes("DIARIO") as any[];
 
   return (
     <div className="mx-auto max-w-3xl p-6 space-y-6">

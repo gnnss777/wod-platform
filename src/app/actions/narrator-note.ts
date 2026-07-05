@@ -24,7 +24,7 @@ export async function getNarratorNotes(chronicleId?: string) {
   const session = await verifySession();
   if (session.role !== "NARRADOR") return [];
 
-  return db.find("NarratorNote", { narratorId: session.userId, ...(chronicleId ? { chronicleId } : {}) }, "*, chronicle(name)", { orderBy: { updatedAt: "desc" } });
+  return db.find("NarratorNote", { narratorId: session.userId, ...(chronicleId ? { chronicleId } : {}) }, "*, chronicle(name)", { orderBy: { updatedAt: "desc" } }) as Promise<any[]>;
 }
 
 export async function deleteNarratorNote(id: string) {
