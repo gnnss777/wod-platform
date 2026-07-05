@@ -11,7 +11,7 @@ export default async function CenasPage() {
       acc[key].push(s);
       return acc;
     },
-    {} as Record<string, typeof scenes>,
+    {} as Record<string, any[]>,
   );
 
   return (
