@@ -9,7 +9,7 @@ export default async function DiarioEntryPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const note = await getNote(id);
+  const note = await getNote(id) as any;
   if (!note) notFound();
 
   return (
