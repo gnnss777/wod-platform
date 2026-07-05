@@ -56,7 +56,7 @@ export default async function CronicaPage() {
                   Seus personagens nesta crônica:
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {c.characters.map((ch) => (
+                  {c.characters.map((ch: any) => (
                     <Link
                       key={ch.id}
                       href={`/jogador/fichas/${ch.id}`}
