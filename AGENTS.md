@@ -7,16 +7,27 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- BEGIN:local-development -->
 # Local Development
 
-## Build & Test locally (antes de dar deploy)
+## Workflow (obrigatório antes de todo commit)
 
 ```powershell
-# 1. Generate Prisma client (needed even if unused)
+# 1. Gerar Prisma client
 npx prisma generate
 
-# 2. Build with webpack (Turbopack is default in Next.js 16)
+# 2. Build com webpack (verifica erros de TS e compilação)
 npx next build --webpack
 
-# 3. Start production server locally
+# 3. Se o build passar, pode commitar
+```
+
+## Dev server (para desenvolvimento)
+
+```powershell
+npx next dev --webpack
+```
+
+## Start production server
+
+```powershell
 npx next start
 ```
 
@@ -36,6 +47,25 @@ Solução: remover manualmente as linhas com valores vazios do `.env.local`.
 npx tsx scripts/seed.ts
 ```
 
+## Commandes Lint
+
+```powershell
+npm run lint
+```
+
+## Projeto: WoD Platform
+
+Plataforma de RPG World of Darkness com duas áreas principais:
+- **Jogador**: fichas, diário, crônica, notas, rolador (d10 e v5)
+- **Narrador**: cenas, crônicas, NPCs, jogadores, sessões, regras, rolador
+
+Stack:
+- Next.js 16 (webpack)
+- Prisma 7 + PostgreSQL (Supabase)
+- Tailwind CSS v4
+- TypeScript
+- Supabase Auth + SSR
+- Zod validação
 ## Vercel
 
 ```powershell

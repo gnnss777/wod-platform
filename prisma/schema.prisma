@@ -63,6 +63,8 @@ model Chronicle {
   narratorNotes     NarratorNote[]
   sessions          LiveSession[]
   chronicleMembers  ChronicleMember[]
+  storyDocuments    StoryDocument[]
+  privateNotes      PrivateNote[]
 }
 
 model ChronicleMember {
@@ -196,6 +198,7 @@ model Scene {
 
   chronicle Chronicle @relation(fields: [chronicleId], references: [id])
   narrator  User      @relation(fields: [narratorId], references: [id])
+  storyDocuments StoryDocument[]
 }
 
 model NarratorNote {
